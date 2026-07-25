@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter 4 &middot; Choosing the Device Generator and Leads: Matching the Device with the Patient &middot; CCDS practice</title>
+<style>
+  :root{
+    --paper:#FDF3F0;
+    --grid-fine:rgba(198,104,86,.13);
+    --grid-bold:rgba(198,104,86,.26);
+    --ink:#16222E;
+    --ink-soft:#5E6E7A;
+    --ink-faint:#8E9BA4;
+    --rule:#E8D3CC;
+    --card:#FFFCFB;
+    --correct:#0B6E4F;
+    --correct-bg:#E3F1EA;
+    --wrong:#9E2F26;
+    --wrong-bg:#FAE7E3;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      repeating-linear-gradient(to right,var(--grid-bold) 0 1px,transparent 1px 40px),
+      repeating-linear-gradient(to bottom,var(--grid-bold) 0 1px,transparent 1px 40px),
+      repeating-linear-gradient(to right,var(--grid-fine) 0 1px,transparent 1px 8px),
+      repeating-linear-gradient(to bottom,var(--grid-fine) 0 1px,transparent 1px 8px);
+    line-height:1.5;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 96px}
+
+  /* ---------- masthead ---------- */
+  .masthead{padding:52px 0 26px}
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--mono);font-weight:600;font-size:clamp(26px,5vw,40px);
+    letter-spacing:-.02em;line-height:1.1;margin:0 0 12px;
+  }
+  .standfirst{margin:0;max-width:56ch;color:var(--ink-soft);font-size:16px}
+
+  /* ---------- rhythm strip (signature) ---------- */
+  .monitor{
+    position:sticky;top:0;z-index:20;
+    margin:0 -20px;padding:10px 20px 8px;
+    background:rgba(253,243,240,.93);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--rule);
+  }
+  .monitor-inner{max-width:820px;margin:0 auto}
+  .strip{
+    display:block;width:100%;height:52px;
+    background:var(--card);border:1px solid var(--rule);border-radius:2px;
+  }
+  .readout{
+    display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;
+    margin-top:8px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  }
+  .readout dt{color:var(--ink-faint);text-transform:uppercase;font-size:10px;letter-spacing:.16em}
+  .readout dd{margin:0 0 0 6px;font-weight:600;font-variant-numeric:tabular-nums}
+  .pair{display:flex;align-items:baseline}
+  .pair--correct dd{color:var(--correct)}
+  .pair--wrong dd{color:var(--wrong)}
+  .reset{
+    margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;background:none;border:1px solid var(--rule);
+    color:var(--ink-soft);padding:5px 11px;border-radius:2px;cursor:pointer;
+  }
+  .reset:hover{border-color:var(--ink-soft);color:var(--ink)}
+
+  /* ---------- sections ---------- */
+  .section-head{
+    display:flex;align-items:baseline;gap:14px;
+    margin:56px 0 20px;padding-bottom:9px;border-bottom:2px solid var(--ink);
+  }
+  .section-range{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink-faint);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .section-title{font-size:17px;font-weight:650;letter-spacing:-.01em;margin:0}
+
+  /* ---------- question card ---------- */
+  .q{
+    background:var(--card);border:1px solid var(--rule);border-radius:3px;
+    padding:20px 22px;margin-bottom:14px;
+    display:grid;grid-template-columns:44px 1fr;gap:0 14px;
+  }
+  .q-num{
+    font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink-faint);
+    font-variant-numeric:tabular-nums;padding-top:2px;
+  }
+  .q-stem{margin:0 0 15px;font-size:16px;line-height:1.45}
+  .q-opts{grid-column:2;display:flex;flex-direction:column;gap:7px}
+
+  .opt{
+    display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;
+    font:inherit;font-size:15px;color:var(--ink);
+    background:transparent;border:1px solid var(--rule);border-radius:3px;
+    padding:10px 12px;cursor:pointer;transition:border-color .12s,background-color .12s;
+  }
+  .opt:hover:not(:disabled){border-color:var(--ink-soft);background:rgba(22,34,46,.03)}
+  .opt:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .opt:disabled{cursor:default}
+  .opt-letter{
+    flex:none;width:22px;height:22px;border-radius:2px;
+    display:grid;place-items:center;
+    font-family:var(--mono);font-size:11px;font-weight:700;
+    border:1px solid var(--rule);color:var(--ink-soft);background:var(--paper);
+  }
+  .opt-text{flex:1;padding-top:1px}
+  .opt-mark{flex:none;width:20px;text-align:center;font-size:15px;line-height:1.4}
+
+  .opt.is-correct{border-color:var(--correct);background:var(--correct-bg)}
+  .opt.is-correct .opt-letter{background:var(--correct);border-color:var(--correct);color:#fff}
+  .opt.is-correct .opt-mark{color:var(--correct);font-weight:700}
+  .opt.is-wrong{border-color:var(--wrong);background:var(--wrong-bg)}
+  .opt.is-wrong .opt-letter{background:var(--wrong);border-color:var(--wrong);color:#fff}
+  .opt.is-wrong .opt-text{text-decoration:line-through;text-decoration-color:rgba(158,47,38,.45)}
+  .opt.is-muted{opacity:.48}
+
+  /* verdict line */
+  .verdict{
+    grid-column:2;margin-top:12px;padding-top:11px;border-top:1px dashed var(--rule);
+    font-family:var(--mono);font-size:12px;letter-spacing:.06em;display:none;align-items:center;gap:9px;
+  }
+  .q.answered .verdict{display:flex}
+  .verdict-tick{font-size:15px}
+  .q.answered-correct .verdict{color:var(--correct)}
+  .q.answered-wrong .verdict{color:var(--wrong)}
+  .answer-chip{
+    display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;
+    background:var(--wrong);color:#fff;border-radius:2px;
+    font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:0;
+  }
+
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--rule);
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-faint)}
+
+  @media (max-width:620px){
+    .q{grid-template-columns:1fr;padding:16px}
+    .q-num{padding:0 0 6px}
+    .q-opts,.verdict{grid-column:1}
+    .masthead{padding:34px 0 20px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="monitor">
+  <div class="monitor-inner">
+    <svg class="strip" id="strip" viewBox="0 0 1000 52" preserveAspectRatio="none" aria-hidden="true">
+      <path id="baseline" d="M0 26 H1000" stroke="#E8D3CC" stroke-width="1" fill="none" vector-effect="non-scaling-stroke"/>
+      <path id="trace-ok" d="" stroke="#0B6E4F" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      <path id="trace-no" d="" stroke="#9E2F26" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    </svg>
+    <dl class="readout">
+      <div class="pair"><dt>Answered</dt><dd id="stat-done">0/200</dd></div>
+      <div class="pair pair--correct"><dt>Correct</dt><dd id="stat-ok">0</dd></div>
+      <div class="pair pair--wrong"><dt>Missed</dt><dd id="stat-no">0</dd></div>
+      <div class="pair"><dt>Score</dt><dd id="stat-pct">&mdash;</dd></div>
+      <button class="reset" id="reset" type="button">Start over</button>
+    </dl>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">IBHRE CCDS Allied Health · practice set</p>
+    <h1>Chapter 4<br>Choosing the Device Generator and Leads: Matching the Device with the Patient</h1>
+    <p class="standfirst">200 questions on this chapter. Pick an answer to lock it in &mdash; a tick means you had it, otherwise the correct letter is shown.</p>
+  </header>
+
+  <main id="exam"></main>
+
+  <footer>
+    Source · Cardiac Pacing, Defibrillation and Resynchronization: A Clinical Approach, 4th edn
+  </footer>
+</div>
+
+<script>
+const DATA = {"questions":[{"n":1,"q":"For patients with permanent atrial fibrillation who require pacing, which pacing approach is preferred?","o":["An AAIR pacemaker","A VDD pacemaker","A leadless device or a single-chamber device with VVIR mode","A DDDR pacemaker with automatic mode switching"],"a":2},{"n":2,"q":"For patients without permanent atrial fibrillation, which device/mode combination is generally indicated?","o":["VVIR pacing only","AAIR pacing only","Single-chamber VVI pacing only","A dual-chamber device with DDDR pacing and automatic mode switch to a nontracking mode"],"a":3},{"n":3,"q":"The authors typically recommend leadless devices for which population, and why?","o":["Younger patients, because of superior longevity","Older patients, because repeated generator replacements are less likely to be a clinical issue","Patients with high defibrillation thresholds","Pediatric patients, due to small body habitus"],"a":1},{"n":4,"q":"In a patient with an irreversible, progressive illness in whom VVI pacing is used, what should be considered if the patient feels worse afterward?","o":["Increasing the lower rate limit immediately","Comparing blood pressures in the native underlying rhythm versus ventricular pacing","Adding a minute ventilation sensor","Switching to unipolar sensing"],"a":1},{"n":5,"q":"In economically constrained regions, which type of device may be necessary to save lives despite advances in device technology?","o":["A CRT-D system","A leadless VDD device","A dual-chamber rate-adaptive device","The simplest device (single-chamber, non-rate-adaptive)"],"a":3},{"n":6,"q":"For most patients with bradyarrhythmias requiring pacing who do not have chronic atrial fibrillation, which pacemaker type is indicated?","o":["An AAI pacemaker","A dual-chamber pacemaker","A leadless VVIR pacemaker","A single-chamber VVI pacemaker"],"a":1},{"n":7,"q":"Why is DDDR pacing frequently recommended for patients with symptomatic bradycardia?","o":["It always reduces defibrillation threshold","It provides the greatest long-term flexibility given the common association with chronotropic incompetence","It is universally the least expensive option","It eliminates the need for any programming"],"a":1},{"n":8,"q":"In patients with chronic atrial fibrillation and a slow ventricular response, rate responsiveness depends primarily on:","o":["Atrial lead position","Sinus node automaticity","Autonomic regulation of the AV node, which is poorly regulated","Steroid elution from the ventricular lead"],"a":2},{"n":9,"q":"If chronic atrial fibrillation with a slow ventricular response develops later in a patient with a DDDR pacemaker, what reprogramming is described?","o":["Reprogramming the device to VVIR","Implanting a new atrial lead","Reprogramming the device to AAIR","Upgrading to a CRT device"],"a":0},{"n":10,"q":"Which patient population is described as necessarily requiring sensor-driven pacing?","o":["Patients with chronic atrial fibrillation and a slow ventricular response","Patients with neurocardiogenic syncope","Patients with congenital complete AV block","Patients with pure sinus node dysfunction and normal AV conduction"],"a":0},{"n":11,"q":"Rate-adaptive pacing is described as essential in dual-chamber devices placed for which indication?","o":["Sick sinus syndrome with fatigue from documented chronotropic incompetence","Leadless systems exclusively","Any implant regardless of symptoms","CRT devices exclusively"],"a":0},{"n":12,"q":"For a patient with pure sinus node disease and no documented abnormality in AV nodal conduction, which mode may be appropriate?","o":["DDD","VDD","AAIR","VVIR"],"a":2},{"n":13,"q":"If normal AV conduction is established preimplant in a patient receiving AAI/AAIR pacing, what is the approximate annual risk of developing AV block?","o":["1-2%","25-30%","Less than 0.1%","10-15%"],"a":0},{"n":14,"q":"If AV block subsequently develops in a patient with an AAIR pacemaker, what is required?","o":["An additional procedure to implant a ventricular lead and upgrade the pacemaker","Immediate device explantation","Conversion to a leadless capsule device only","No further intervention is needed"],"a":0},{"n":15,"q":"Single-pass VDD leads sense the atrium using which mechanism?","o":["A dedicated bipolar atrial tip-ring pair","A coronary sinus electrode","Floating electrodes in the atrialized portion of the lead","An epicardial patch electrode"],"a":2},{"n":16,"q":"Historically, single-pass VDD leads have generally used which fixation mechanism?","o":["Epicardial screw-in fixation","Leadless capsule tines","Active fixation","Passive fixation"],"a":3},{"n":17,"q":"For pediatric patients receiving single-lead VDD systems, many implanters, including the authors' institution, prefer:","o":["Passive-fixation leads exclusively","Active-fixation leads","Epicardial leads exclusively","Leadless capsule devices"],"a":1},{"n":18,"q":"What is a key concern that has limited widespread use of single-pass DDD leads with floating atrial electrodes?","o":["Unacceptably high defibrillation threshold","Incompatibility with IS-1 connectors","Requirement for high atrial outputs and risk of phrenic nerve stimulation","Excessive lead diameter compared to standard leads"],"a":2},{"n":19,"q":"For a patient with pure AV node disease and normal sinus node function, which pacing mode(s) may be appropriate?","o":["DDI or DDIR","AAI or AAIR","VDD or VDDR","VVI or VVIR"],"a":2},{"n":20,"q":"Which patient population is specifically noted as potentially doing well with VDD(R) pacing?","o":["Patients with carotid sinus hypersensitivity","Patients requiring cardiac resynchronization","Patients with permanent atrial fibrillation","Patients with congenital complete heart block"],"a":3},{"n":21,"q":"Placing a single-pass DDD lead in the coronary sinus has been attempted to achieve what?","o":["Right ventricular apical stimulation","His bundle stimulation","Epicardial stimulation","Left atrial and left ventricular stimulation"],"a":3},{"n":22,"q":"Why is dual-chamber pacing necessary in patients requiring pacing for vasovagal syncope?","o":["Single-chamber devices cannot sense P waves","Dual-chamber pacing lowers defibrillation threshold","AAI pacing is universally contraindicated","Ventricular pacing alone could result in pacemaker syndrome and aggravate hypotension from vasodepression"],"a":3},{"n":23,"q":"The bradycardia occurring in patients with carotid sinus hypersensitivity may be due to which mechanisms?","o":["Ventricular tachycardia only","Complete heart block exclusively","AV block or sinus arrest","Atrial fibrillation only"],"a":2},{"n":24,"q":"Which factor is explicitly listed as an option that must be considered for all pacing leads?","o":["Upper pacing rate","Maximum shock output","Compatibility of lead and pulse generator connection system","Programmable defibrillation waveform"],"a":2},{"n":25,"q":"Compared to ventricular leads, atrial pacing leads may additionally be available in which shape?","o":["Spiral coronary sinus shape","Quadripolar coronary sinus shape","Preformed J shape","Tined epicardial shape"],"a":2},{"n":26,"q":"Right ventricular pacing leads are typically described as being what shape?","o":["S-shaped","Spiral-shaped","Straight","Preformed J-shaped"],"a":2},{"n":27,"q":"What is described as the most successful and widely used method for reducing pacing threshold?","o":["Fractal coating alone","Increasing electrode surface area","Switching to unipolar sensing","Steroid elution"],"a":3},{"n":28,"q":"Which steroids are commonly used in steroid-eluting pacing leads?","o":["Betamethasone or triamcinolone","Methylprednisolone or cortisone","Dexamethasone sodium phosphate or dexamethasone acetate","Prednisone or hydrocortisone"],"a":2},{"n":29,"q":"The amount of steroid contained in a steroid-eluting plug or collar is typically:","o":["50 mg","Less than 1 mg","100 mg","5-10 mg"],"a":1},{"n":30,"q":"Steroid elution is available on which of the following lead types?","o":["Only unipolar atrial leads","Only ICD defibrillation coils","Atrial and ventricular leads with both active and passive fixation, as well as coronary venous, epicardial, and leadless leads","Only epicardial leads"],"a":2},{"n":31,"q":"Besides steroid elution, what other electrode surface technique is mentioned for lowering pacing thresholds?","o":["Using larger electrode surface area","Fractal coating","Increasing interelectrode spacing","Titanium nitride coating"],"a":1},{"n":32,"q":"In a unipolar pacing lead, which structure functions as the anode?","o":["The defibrillation coil","The ring electrode","The pulse generator (can)","The tip electrode"],"a":2},{"n":33,"q":"In a bipolar pacing lead, the tip electrode functions as the:","o":["Cathode","Indifferent electrode","Anode","Ground reference"],"a":0},{"n":34,"q":"Why are unipolar leads more susceptible to sensing far-field intracardiac and extracardiac signals?","o":["They have a large interelectrode distance, functioning as a big antenna","They are constructed only of platinum","They lack steroid elution","They have inherently lower impedance"],"a":0},{"n":35,"q":"Bipolar leads have become the standard for bradycardia pacing largely because of:","o":["Smaller overall lead diameter","Lower susceptibility to electromagnetic interference and other far-field signals","Lower manufacturing cost","Higher pacing thresholds"],"a":1},{"n":36,"q":"Historically, why did bipolar leads show a higher overall incidence of failure than unipolar leads across decades of use?","o":["Bipolar leads have larger diameters causing more fractures","Largely due to specific bipolar leads that used 80A polyurethane, which failed in high numbers in the 1980s","Bipolar leads cannot use steroid elution","Bipolar leads inherently have weaker conductors"],"a":1},{"n":37,"q":"A bipolar lead with a greater interelectrode distance will generally produce:","o":["Smaller amplitude far-field signals","Larger amplitude far-field signals","Only near-field signals","No far-field signal at all"],"a":1},{"n":38,"q":"The interelectrode distance of an atrial bipolar lead can affect the reliability of which function?","o":["Defibrillation threshold","Battery longevity","Steroid elution","Mode switching"],"a":3},{"n":39,"q":"Choice of electrode material is guided primarily by which properties?","o":["Metal-tissue impedance properties, tissue fibrotic reaction, long-term function, and susceptibility to corrosion","Cost of manufacturing alone","Battery chemistry compatibility alone","Radiopacity and color alone"],"a":0},{"n":40,"q":"Which metal alloy, composed of cobalt, chromium, molybdenum, manganese, nickel, and iron, is commonly used for electrodes?","o":["Elgiloy","Optim","Nitinol","MP35N"],"a":0},{"n":41,"q":"Which electrode material is described as inert and having lower chronic thresholds than platinum electrodes?","o":["Platinum-iridium","Stainless steel","Titanium","Vitreous carbon"],"a":3},{"n":42,"q":"Older leads with a large electrode surface area typically resulted in:","o":["Low lead impedance, high current drain, and high pacing threshold","Improved generator longevity","High lead impedance and low pacing threshold","No change in pacing threshold"],"a":0},{"n":43,"q":"The Medtronic CapSure 5054 lead has an electrode tip surface area of approximately:","o":["12 mm2","5 mm2","1.2 mm2","0.12 mm2"],"a":2},{"n":44,"q":"A small electrode tip surface area (high current density) results in which of the following?","o":["Higher lead impedance, lower pacing threshold, and improved generator longevity","Lower lead impedance and higher pacing threshold","No change to lead impedance","Increased current drain and shorter longevity"],"a":0},{"n":45,"q":"Contemporary tip electrodes are made porous using which manufacturing techniques?","o":["Sintering or laser-drilling","Electroplating and anodizing","Chemical vapor deposition","Extrusion and injection molding"],"a":0},{"n":46,"q":"Compared to smooth-tipped electrodes, porous electrodes generally have:","o":["Lower pacing thresholds and lower dislodgement rates","No measurable difference in performance","Higher impedance with no threshold benefit","Higher pacing thresholds and higher dislodgement rates"],"a":0},{"n":47,"q":"The lead conductor is typically made of which high-strength alloy?","o":["Optim","MP35N","Elgiloy","Nitinol"],"a":1},{"n":48,"q":"MP35N is an alloy composed of which elements?","o":["Titanium and nickel only","Silver and copper","Nickel, cobalt, chromium, and molybdenum","Platinum, iridium, and tantalum"],"a":2},{"n":49,"q":"How many conductors does a standard unipolar lead have?","o":["Two","One","Three","Four"],"a":1},{"n":50,"q":"Bipolar lead conductors can be arranged in which two configurations?","o":["Radial or helical only","Parallel or coaxial","Concentric or bifilar only","Braided or woven only"],"a":1},{"n":51,"q":"What is the functional advantage of a coaxial lead's central lumen?","o":["It increases defibrillation coil surface area","It allows passage of a stylet for ease of lead placement","It reduces lead diameter below 3 Fr automatically","It enables steroid elution"],"a":1},{"n":52,"q":"Current coaxial leads use which thin insulation material on each conductor wire to reduce diameter and increase flexibility?","o":["Pellethane 80A","Silicone rubber only","Optim copolymer","Ethylene tetrafluoroethylene (ETFE)"],"a":3},{"n":53,"q":"What are the two primary insulation materials used for pacing leads for nearly five decades?","o":["Titanium and platinum","Nitinol and PTFE","ETFE and Optim","Silicone rubber and polyurethane"],"a":3},{"n":54,"q":"A disadvantage of silicone rubber insulation, per Table 4.2, is that it:","o":["Has poor biostability","Tears easily","Is subject to cold-flow failure","Is highly thrombogenic"],"a":1},{"n":55,"q":"A disadvantage of polyurethane insulation (particularly Pellethane 80A) is the potential for:","o":["Poor compressive properties","Tearing easily","High friction in blood","Environmental stress cracking"],"a":3},{"n":56,"q":"Which insulation material has superior compressive properties, specifically low creep or cold-flow?","o":["Polyurethane","ETFE","Silicone rubber","PTFE"],"a":0},{"n":57,"q":"Which insulation material is believed by some to be inherently less thrombogenic?","o":["MP35N coating","Polyurethane","Silicone rubber","Optim copolymer"],"a":1},{"n":58,"q":"The softer, more flexible version of polyurethane historically associated with higher rates of insulation degradation is known as:","o":["80A","60A","55D","90D"],"a":0},{"n":59,"q":"Most current polyurethane leads utilize which version of the insulation, which is much less prone to degradation?","o":["55D","60A","80A","95A"],"a":0},{"n":60,"q":"A novel silicone rubber-polyurethane copolymer insulation material developed specifically for cardiac leads is called:","o":["Optim","Pellethane","ETFE","MP35N"],"a":0},{"n":61,"q":"Silicone rubber's tendency to absorb lipids has NOT been proven to be clinically significant in which application, unlike ball-and-cage heart valves?","o":["Coronary stents","Vascular grafts","Pacing leads","Prosthetic joints"],"a":2},{"n":62,"q":"Mineralization of the fibrous encapsulating sheath around a lead (extrinsic mineralization) is common but does not appear to cause insulation failure, although it greatly hinders:","o":["Battery longevity","Initial implant success","Removal of old leads","Steroid elution"],"a":2},{"n":63,"q":"According to the chapter, what should be done with a malfunctioning or grossly damaged lead at the present time?","o":["It should be abandoned and capped, or extracted and replaced","It should be repaired with medical adhesive and silicone film","It should be repaired using manufacturer repair kits","It should be left in place and reprogrammed only"],"a":0},{"n":64,"q":"Some experts have suggested a cumulative failure rate goal of no worse than 5% at how many years for pacing leads?","o":["20 years","2 years","50 years","5 years"],"a":0},{"n":65,"q":"Some experts have suggested a cumulative failure rate goal of no worse than 5% at how many years for ICD leads?","o":["2 years","20 years","1 year","10 years"],"a":3},{"n":66,"q":"Decreasing lead diameters over the years have been beneficial for vascular access and avoidance of which complications?","o":["Pneumothorax and hemothorax","Cardiac tamponade and pericarditis","Tricuspid regurgitation and subclavian vein stenosis","Endocarditis and sepsis"],"a":2},{"n":67,"q":"A potential disadvantage associated with very small-diameter leads is:","o":["Increased pacing threshold in all cases","Decreased biocompatibility","Increased defibrillation threshold in all cases","Increased potential for lead failure"],"a":3},{"n":68,"q":"Contemporary stylet-driven leads commonly range in size from:","o":["10 to 15 Fr","20 to 23 Fr","1 to 2 Fr","4.5 to 7 Fr"],"a":3},{"n":69,"q":"Small-diameter leads may be preferentially used in which patient populations?","o":["Patients needing epicardial leads only","Patients with anticipated high defibrillation thresholds","Children and patients with existing transvenous leads in whom the vessel lumen is compromised","Patients requiring dual-coil leads"],"a":2},{"n":70,"q":"The lumenless SelectSecure lead (model 3830) replaces the coil cathode with what conductor design?","o":["A quadripolar electrode array","A cable conductor","A steroid-eluting collar only","A dual-coil conductor"],"a":1},{"n":71,"q":"The SelectSecure lead is delivered using which method instead of a traditional stylet?","o":["A guidewire only","An introducer needle","A deflectable or fixed-curve sheath","A balloon catheter"],"a":2},{"n":72,"q":"The Medtronic C315His fixed-curve sheath was specifically designed to facilitate:","o":["Leadless pacemaker deployment","Epicardial lead placement","Left ventricular coronary sinus lead placement","Parahisian (His bundle) pacing"],"a":3},{"n":73,"q":"The lumenless SelectSecure lead design allows for further reduction of lead diameter to approximately:","o":["10 Fr","4.1 Fr","23 Fr","7.5 Fr"],"a":1},{"n":74,"q":"Is it generally acceptable to combine a pacing lead from one manufacturer with a pulse generator from a different manufacturer?","o":["Yes, as long as the connector is compatible with the connector cavity and functionality is similar","No, leads and generators must always be from the same manufacturer","Only if both use DF-4 connectors","Only for ICD systems, never pacemakers"],"a":0},{"n":75,"q":"Historically, unipolar pacing leads were typically what diameter?","o":["8 mm","5 or 6 mm","1.5 mm","3.2 mm"],"a":1},{"n":76,"q":"Most leads currently used are of which connector design with a 3.2 mm diameter?","o":["Bifurcated bipolar","Trifurcated","In-line bipolar","Quadrifurcated"],"a":2},{"n":77,"q":"In what year was a voluntary standard established for 3.2 mm lead connectors and connector cavities?","o":["1986","1976","1996","2006"],"a":0},{"n":78,"q":"The voluntary standard incorporating sealing rings on a 3.2 mm lead connector is referred to as:","o":["IS-1","DF-1","IS-4","VS-1"],"a":3},{"n":79,"q":"The subsequent industry-wide, internationally accepted standard configuration for pacing lead connectors is known as:","o":["DF-4","VS-1","IS-1","IS-4"],"a":2},{"n":80,"q":"On a dedicated unipolar lead that complies with the standard connector design, the ring electrode is:","o":["Electrically inactive","Physically removed","Used for defibrillation","Used as the primary cathode"],"a":0},{"n":81,"q":"The standard connector configuration used for quadripolar coronary sinus leads is known as:","o":["VS-1","IS-4","IS-1","DF-4"],"a":1},{"n":82,"q":"Epicardial pacing may still be necessary in patients with which condition(s)?","o":["Pure sinus node dysfunction only","Chronic atrial fibrillation only","Congenital cardiac anomalies preventing transvenous access, or tricuspid valve abnormalities precluding lead placement","Neurocardiogenic syncope only"],"a":2},{"n":83,"q":"Compared with transvenous leads, epicardial leads have historically had:","o":["Lower pacing thresholds and greater reliability","Higher pacing thresholds and less mechanical reliability","Lower cost as their only distinguishing feature","Identical performance characteristics"],"a":1},{"n":84,"q":"Which lead technologies are used in an attempt to keep epicardial pacing thresholds lower?","o":["Quadripolar leads","Platinized and steroid-eluting leads","Dual-coil leads","Lumenless leads"],"a":1},{"n":85,"q":"Which registry, run privately with the American College of Cardiology and Heart Rhythm Society, collects ICD patient follow-up data in the USA?","o":["The Micra Post-Approval Registry","The Medicare Lead Registry","The National Cardiovascular Device Registry (NCDR ICD Registry)","The FDA MAUDE Database"],"a":2},{"n":86,"q":"In what year did the Centers for Medicare and Medicaid Services initiate regulations requiring ICD follow-up data for reimbursement?","o":["1986","2005","2015","1995"],"a":1},{"n":87,"q":"Following withdrawal of which product from the market, only a single leadless pacemaker remains available for implant?","o":["The Medtronic Micra","The Boston Scientific S-ICD","The Abbott Nanostim","The St. Jude Optim lead"],"a":2},{"n":88,"q":"The Micra leadless pacemaker was introduced in what year?","o":["2015","2020","2005","2010"],"a":0},{"n":89,"q":"The Micra is delivered via which approach?","o":["Transseptal approach via the left atrium","Epicardial surgical approach","Subclavian venous approach","Percutaneous transcatheter approach via the right femoral vein"],"a":3},{"n":90,"q":"What is the approximate volume of the Micra device?","o":["80 cm3","8 cm3","0.08 cm3","0.8 cm3"],"a":3},{"n":91,"q":"What are the approximate length and outer diameter of the Micra capsule?","o":["Length 100 mm, outer diameter 20 mm","Length 10 mm, outer diameter 3 mm","Length 50 mm, outer diameter 10 mm","Length 25.9 mm, outer diameter 6.7 mm"],"a":3},{"n":92,"q":"The Micra capsule is delivered through what size introducer sheath?","o":["35F","12F","6F","23F"],"a":3},{"n":93,"q":"The Micra capsule is constructed predominantly of titanium, with electrically inactive tines made of what material?","o":["Nitinol","MP35N","Elgiloy","Platinum"],"a":0},{"n":94,"q":"The Micra's rate-adaptive pacing (VVIR) functionality is based on:","o":["An intracardiac accelerometer","A minute ventilation sensor","A QT interval sensor","A temperature sensor"],"a":0},{"n":95,"q":"According to the Micra Post-Approval Registry (1817 patients, 179 centers, 23 countries), what was the reported device dislodgement rate?","o":["0.6%","6%","16%","0.06%"],"a":3},{"n":96,"q":"In the Micra Post-Approval Registry, how many pericardial effusions were reported, and how many required an intervention?","o":["14 effusions, 10 required intervention","50 effusions, 25 required intervention","1 effusion requiring intervention","4 effusions, none required intervention"],"a":0},{"n":97,"q":"The Micra AV uses accelerometer-based algorithms to track which physiologic events to provide AV synchronous pacing?","o":["Respiratory rate and minute ventilation","QRS morphology and T-wave amplitude","Core body temperature changes","Passive ventricular filling and atrial contraction"],"a":3},{"n":98,"q":"According to reported data, what percentage of Micra AV patients achieved greater than 70% AV synchronous pacing?","o":["95%","25%","50%","100%"],"a":0},{"n":99,"q":"Leadless pacemakers obviate which category of complications?","o":["Lead-related or pocket-related complications, such as insulation break, connector issues, vein thrombosis, and pocket hematoma, infection, or erosion","The need for any device programming","All arrhythmia-related complications","Battery depletion entirely"],"a":0},{"n":100,"q":"How are Micra-related infections typically managed, per the chapter?","o":["They are managed with lead extraction tools","They always require device explantation","They require surgical debridement of a pocket that does not exist","They have been successfully treated with antibiotics without device removal"],"a":3},{"n":101,"q":"What are the two basic historical ICD lead designs?","o":["Integrated and true bipolar","Active and passive fixation","Coaxial and multilumen","Unipolar and bipolar"],"a":2},{"n":102,"q":"Compared with multilumen leads, coaxial ICD leads historically had:","o":["Larger diameter, greater stiffness, and higher failure rates","Lower defibrillation thresholds","Smaller diameter and lower failure rates","Identical failure rates to multilumen leads"],"a":0},{"n":103,"q":"Multilumen ICD leads incorporate all electrodes and shocking coils in what arrangement?","o":["Externally mounted outside the lead body","In parallel within a single insulation framework","Concentrically layered with insulation between each","Twisted coaxially around a central lumen"],"a":1},{"n":104,"q":"The ICD lead conductor is made of the alloy MP35N combined with which additional material to provide low resistance for high-energy defibrillation?","o":["Titanium","Platinum","Iridium","Silver"],"a":3},{"n":105,"q":"In the drawn brazed strand conductor design, silver is arranged:","o":["Alternating in layers with MP35N","As a core surrounded by MP35N","Absent from the design","Around the MP35N"],"a":3},{"n":106,"q":"In the drawn filled tube conductor design, silver is arranged:","o":["Around the outside of MP35N","Absent from the design","As a core surrounded by MP35N","Woven between MP35N strands"],"a":2},{"n":107,"q":"ICD lead conductors can have which two design types?","o":["Solid wire or hollow tube","Unifilar coil or braided mesh","Platinum wire or titanium mesh","Multifilar coil or multifilar cable"],"a":3},{"n":108,"q":"What is the primary advantage of a coil conductor design in ICD leads?","o":["Its central lumen allows passage of a stylet","It allows a smaller lead diameter than cable design","It carries higher current than cable design","It has a lower fracture rate than cable design"],"a":0},{"n":109,"q":"What observation drove the development of multifilar braided cable conductors instead of coils?","o":["A need to improve defibrillation threshold","A need for a larger lead diameter","A higher conductor fracture rate observed with coils","A need to reduce manufacturing cost"],"a":2},{"n":110,"q":"Cable conductors are more resistant to fracture and allow a smaller lead diameter, but they lack what feature compared to coils?","o":["Compatibility with IS-1 connectors","Steroid elution capability","A lumen for insertion of a stylet","The ability to carry high-voltage shocks"],"a":2},{"n":111,"q":"In current ICD leads, which conductor typically remains a coil design, continuing to predispose the lead to fracture?","o":["The proximal coil conductor only","The ring electrode conductor","The cathode tip conductor","All conductors, which remain coil design"],"a":2},{"n":112,"q":"The ICD defibrillation coil is typically made of which materials?","o":["Platinum-iridium alloy, or platinum coated with tantalum or iridium oxide","Pure titanium","MP35N alloy","Elgiloy"],"a":0},{"n":113,"q":"Bare metal defibrillation coils cause what tissue reaction that complicates lead extraction?","o":["Calcification without any fibrosis","No significant tissue reaction","A vigorous fibrous reaction","Rapid endothelialization without fibrosis"],"a":2},{"n":114,"q":"Defibrillation coils are backfilled with what material in the spaces between the coil metal?","o":["Silicone rubber","Titanium mesh","Polyurethane","PTFE foam"],"a":0},{"n":115,"q":"Which coil design further reduces the risk of fibrous encapsulation by abrading away excess coil surface to create a flat exposed surface?","o":["Quadripolar coils","Isodiametric flat surface coils","Backfilled rounded coils","Bare metal rounded coils"],"a":1},{"n":116,"q":"Which material jacket has been used over ICD defibrillation coils to prevent fibrosis while still allowing electrical conduction?","o":["Optim copolymer","Silicone rubber alone","Extended polytetrafluoroethylene (ePTFE)","Titanium mesh"],"a":2},{"n":117,"q":"ePTFE-coated defibrillation coils have been shown in animal models to be easier to extract from which structure?","o":["The superior vena cava exclusively","The coronary venous system","The right atrium","The subclavian vein"],"a":1},{"n":118,"q":"A common combination of insulation materials for current ICD leads includes a silicone rubber body with:","o":["An outer polyurethane coating and a PTFE or ETFE jacket around each conductor","An outer titanium coating","No additional coating material","An inner Elgiloy layer"],"a":0},{"n":119,"q":"The transvenous defibrillator lead is typically placed in which cardiac chamber to sense, pace, and deliver shocks?","o":["Left ventricle via coronary sinus","Left atrium","Right atrium","Right ventricle"],"a":3},{"n":120,"q":"ICD leads are described as tripolar or quadripolar, with variation occurring in which feature?","o":["The insulation material only","The distribution of function across the electrodes","The connector type only","The number of coils, always fixed at two"],"a":1},{"n":121,"q":"True bipolar sensing in an ICD lead occurs between which electrodes?","o":["The tip electrode and the distal coil","The tip electrode and a closely spaced dedicated ring","The distal and proximal coils","The proximal coil and the can"],"a":1},{"n":122,"q":"Why are far-field electrograms less likely to be sensed with true bipolar sensing?","o":["Because steroid elution is present","Because the spacing between the bipolar pair is small","Because the electrodes have a larger surface area","Because platinum-iridium alloy is used"],"a":1},{"n":123,"q":"Integrated sensing lead systems pace and sense between which two components?","o":["The tip electrode and a dedicated ring","The tip electrode and the distal coil","The can and the distal coil","The proximal and distal coils"],"a":1},{"n":124,"q":"What potential advantage is associated with integrated bipolar leads related to having two defibrillation coils?","o":["Guaranteed elimination of oversensing","Elimination of the pace-sense conductor requirement","In conjunction with an active can, it may lower defibrillation thresholds, although not uniformly observed","Reduced lead diameter compared with true bipolar leads"],"a":2},{"n":125,"q":"In early integrated lead designs, the tip-to-distal-coil distance was kept small (6 mm) in order to minimize:","o":["Detection of far-field signals","Lead diameter","Defibrillation threshold","Pacing threshold"],"a":0},{"n":126,"q":"What problem was identified with the small 6 mm tip-to-coil distance in early integrated leads after a shock?","o":["Fracture at the lead tip","Inability to sense atrial signals","A permanent increase in pacing threshold","The amplitude of the recorded electrogram diminished significantly, risking failure to redetect continuing VF"],"a":3},{"n":127,"q":"Contemporary integrated leads have been redesigned with what tip-to-distal-coil distance?","o":["50 mm","12 mm","3 mm","25 mm"],"a":1},{"n":128,"q":"The trade-off of the increased 12 mm tip-to-coil distance in redesigned integrated leads is:","o":["An increased risk of oversensing far-field signals","An increased risk of undersensing near-field signals","Decreased defibrillation efficacy","Increased pacing threshold"],"a":0},{"n":129,"q":"In most defibrillators, effective sensitivity after a sensed R wave behaves in what manner until the next sensed event?","o":["It decreases progressively","It increases progressively (dynamic sensing/gain) until maximum sensitivity is reached","It oscillates randomly","It remains constant"],"a":1},{"n":130,"q":"Which patients are at increased risk for oversensing due to dynamic sensitivity because more time elapses after a QRS complex for sensitivity to increase?","o":["Patients with fast heart rates","Patients with normal sinus rhythm only","Patients with slow heart rates","Patients with atrial fibrillation exclusively"],"a":2},{"n":131,"q":"Because sensitivity is rapidly maximized after a paced event, which patients are most likely to experience far-field myopotential oversensing?","o":["Patients with rapid rates of pacing","Patients with no pacing at all","Patients with slow rates of pacing","Patients with unipolar atrial leads only"],"a":2},{"n":132,"q":"Far-field myopotential oversensing in ICD patients most commonly involves which type of potentials?","o":["Facial myopotentials","Phrenic (diaphragmatic) myopotentials","Pectoral myopotentials exclusively","Forearm skeletal muscle potentials"],"a":1},{"n":133,"q":"What programming change usually eliminates the myopotential oversensing problem described in the chapter?","o":["Disabling all bradycardia pacing","Increasing the lower rate and decreasing sensitivity","Decreasing the lower rate and increasing sensitivity","Switching to unipolar sensing"],"a":1},{"n":134,"q":"In which clinical setting do the authors state true bipolar sensing is predominantly preferred?","o":["In the setting of abandoned intravascular leads","In patients with high anticipated defibrillation threshold","In all pediatric patients","In patients with CRT devices only"],"a":0},{"n":135,"q":"Why might the distal coil in an integrated lead system be problematic near an abandoned intravascular lead?","o":["It always causes immediate lead fracture","It always raises the defibrillation threshold","It prevents any steroid elution","It may make contact with the abandoned lead and generate lead noise"],"a":3},{"n":136,"q":"When lead extraction becomes necessary in a dual-coil ICD system, which coil is often densely adherent to the SVC and difficult to remove?","o":["The tip electrode","The proximal coil","The ring electrode","The distal coil"],"a":1},{"n":137,"q":"In what approximate percentage of patients is the proximal coil location ill-suited for defibrillation, requiring exclusion from the shocking circuit?","o":["25-30%","Less than 5%","Less than 1%","50%"],"a":1},{"n":138,"q":"Single-coil true bipolar systems are favored in which patient population, given a potential future need for lead extraction?","o":["Younger patients","Patients requiring epicardial leads only","Patients with permanent atrial fibrillation","Elderly patients"],"a":0},{"n":139,"q":"Dual-coil ICD systems may be preferable when higher defibrillation thresholds are anticipated, as in which conditions?","o":["Chronic atrial fibrillation","Sinus node dysfunction","Congenital complete heart block","Hypertrophic cardiomyopathy, antiarrhythmic therapy, and some sodium channel defects"],"a":3},{"n":140,"q":"What percentage of ICD patients, per the chapter, require system revision related to defibrillation threshold issues?","o":["50%","25%","Less than 5%","Less than 1%"],"a":2},{"n":141,"q":"All new ICD lead-generator systems currently utilize which connector standard?","o":["The DF-1 connector","The IS-1 connector","The DF4 in-series connector","The VS-1 connector"],"a":2},{"n":142,"q":"The pace-sense component of an older-style ICD lead uses what type of connector?","o":["IS-1","DF-1","DF-4","IS-4"],"a":0},{"n":143,"q":"Each shock coil in an older-style ICD lead uses what standard connector?","o":["IS-1","DF-1","DF-4","IS-4"],"a":1},{"n":144,"q":"An older-style dual-coil ICD lead has how many total connector pins/ports (two DF-1 plus one IS-1)?","o":["One","Three","Four","Two"],"a":1},{"n":145,"q":"The three lead connectors of an older-style dual-coil ICD lead are joined at what structure?","o":["A trifurcated yoke","A bifurcated yoke","A quadrifurcated yoke","A single monolithic connector"],"a":0},{"n":146,"q":"The DF-4 connector standard incorporates how many conductors into a single quadrupole connection?","o":["Three","Two","Six","Four"],"a":3},{"n":147,"q":"With the DF-4 standard, how many ports are required for a defibrillation lead, compared to the older standard's three ports?","o":["Four","One","Three","Two"],"a":1},{"n":148,"q":"Compared to the older connector standard, a DF-4 lead is described as being approximately how much shorter?","o":["7-10 cm","1-2 cm","20-30 cm","50 cm"],"a":0},{"n":149,"q":"In the DF-4 design, the sealing rings are moved from the lead to the header, which primarily reduces the chance of what?","o":["Damage during implantation","Steroid elution failure","Battery depletion","Increased pacing threshold"],"a":0},{"n":150,"q":"In general, larger ICD/pacemaker devices have greater battery capacity and thus:","o":["Shorter longevity","Lower defibrillation threshold","Increased pacing threshold","Greater longevity"],"a":3},{"n":151,"q":"In smaller patients or children where device size is constrained, which options are described as available?","o":["Only larger devices placed abdominally","Smaller devices with shorter longevity, subpectoral placement, or less commonly used implant sites","Only epicardial leads","Only leadless devices"],"a":1},{"n":152,"q":"Elevated defibrillation thresholds are described as affecting approximately what percentage of the ICD population?","o":["25-30%","5-10%","Less than 1%","50%"],"a":1},{"n":153,"q":"Most ICDs utilize what type of defibrillation waveform?","o":["Sine wave alternating current waveform","Fully programmable triphasic waveform","Monophasic waveform","Fixed-tilt biphasic waveform"],"a":3},{"n":154,"q":"At the time of the chapter's writing, which single manufacturer produced ICDs with programmable defibrillation waveforms?","o":["Medtronic","Boston Scientific","Biotronik","St. Jude Medical"],"a":3},{"n":155,"q":"What is described as the single most important decision in selecting a defibrillator?","o":["Whether to implant a single-chamber or dual-chamber system","Whether to use true or integrated bipolar sensing","Whether to use silicone or polyurethane insulation","Whether to use a dual-coil or single-coil lead"],"a":0},{"n":156,"q":"Single-chamber defibrillators are generally preferred in patients with which arrhythmia?","o":["Hypertrophic cardiomyopathy","Paroxysmal atrial fibrillation","Long QT syndrome","Chronic atrial fibrillation"],"a":3},{"n":157,"q":"Which patient population particularly benefits from the greater longevity per unit size offered by single-chamber systems?","o":["Younger or smaller patients","Elderly patients with sinus node dysfunction","Patients with permanent complete AV block","Patients with heart failure needing CRT"],"a":0},{"n":158,"q":"Which lead type is noted to dislodge more frequently than ventricular leads, an important factor favoring single-chamber ICDs?","o":["Dual-coil ventricular leads","Atrial leads","Coronary sinus LV leads","Epicardial leads"],"a":1},{"n":159,"q":"If a dislodged atrial lead is electrically abandoned in a dual-chamber ICD system, the system functionally becomes:","o":["A CRT-D system","A leadless ICD","A single-chamber ICD","Nonfunctional, requiring explant"],"a":2},{"n":160,"q":"In sinus node dysfunction, atrial pacing combined with avoidance of ventricular pacing has what modest effect?","o":["It eliminates the need for anticoagulation","It reduces battery longevity","It lowers the risk of atrial fibrillation","It increases the defibrillation threshold"],"a":2},{"n":161,"q":"In patients with high-grade AV block and heart failure, which device is preferred given the known association between heart failure and chronic RV apical pacing?","o":["An AAIR pacemaker","A leadless VVI device","A dual-chamber biventricular (CRT) device","A single-chamber VVIR ICD"],"a":2},{"n":162,"q":"Prospective, randomized trials found that dual-chamber detection decreased the odds of inappropriate SVT detection as VT by approximately how much?","o":["A quarter","Half","Two-thirds","There was no measurable difference"],"a":1},{"n":163,"q":"One study found that dual-chamber detection enhancements reduced clinically significant adverse events by approximately:","o":["Two-thirds","90%","One-tenth","One-third"],"a":3},{"n":164,"q":"Selection of a dual-chamber ICD to improve SVT-VT rhythm classification is considered reasonable when the programmed VT zone rate is:","o":["Less than 200 bpm","Exactly 320 bpm","Any rate above 300 bpm","Greater than 220 bpm"],"a":0},{"n":165,"q":"Tricuspid valve regurgitation from a lead crossing the valve appears more likely to occur with which lead type?","o":["Epicardial leads, compared with transvenous leads","Leadless devices, compared with transvenous leads","Standard pacing leads, compared with ICD leads","ICD leads, compared with standard pacing leads"],"a":3},{"n":166,"q":"To help avoid tricuspid regurgitation, ICD leads should avoid placement close to the insertion of the papillary muscle on which structure?","o":["The right atrial appendage","The moderator band","The interventricular septum","The coronary sinus ostium"],"a":1},{"n":167,"q":"What algorithmic strategy is used in dual-chamber ICDs selected primarily for improved SVT/VT discrimination to minimize unwanted ventricular pacing?","o":["AV search hysteresis or managed ventricular pacing","Fixed rate-adaptive AV delay only","Permanently increasing the lower rate limit","Automatic mode switching to VOO"],"a":0},{"n":168,"q":"What is the goal percentage of QRS complexes that should be resynchronized for a CRT patient to benefit?","o":["At least 70%","As close to 100% as possible","At least 50%","Exactly 90%"],"a":1},{"n":169,"q":"What are the main interruptors of resynchronization listed in the chapter?","o":["Steroid elution failure and lead insulation breach","High defibrillation threshold and lead fracture","Battery depletion and generator malfunction only","Atrial fibrillation with rapid intrinsic conduction, an inappropriately long AV interval, and frequent premature ventricular contractions"],"a":3},{"n":170,"q":"Compared with standard pacemakers, generator replacement for CRT devices is generally required:","o":["Later","Only after 15 years","Earlier","At the same interval"],"a":2},{"n":171,"q":"LV pacing thresholds compared with endocardial RV pacing thresholds are typically:","o":["Identical","Unpredictable and unrelated","Higher","Lower"],"a":2},{"n":172,"q":"CRT device algorithms have been developed to determine the minimum amplitude that consistently results in ventricular capture, and to calculate a new amplitude based on what?","o":["A programmable safety margin and the programmed maximum LV adapted amplitude","Battery voltage alone","A fixed maximal output regardless of threshold","Patient body weight"],"a":0},{"n":173,"q":"LV pacing leads must balance which two competing size requirements?","o":["Rigid enough for stylet use yet flexible enough for lumenless delivery","Long enough for atrial placement yet short enough for ventricular placement","Large enough for defibrillation yet small enough for steroid elution","Large enough to wedge into a venous tributary yet small enough to negotiate collateral veins"],"a":3},{"n":174,"q":"Early LV pacing leads used in the first large multicenter LV pacing trial (Medtronic 2187/2188) required what to be shaped, mimicking coronary sinus mapping catheters?","o":["The delivery sheath","The guidewire","The lead body itself, permanently","The inserted stylet"],"a":3},{"n":175,"q":"What was the dislodgment rate reported with the earliest stylet-driven LV pacing leads?","o":["0.5%","25%","8%","50%"],"a":2},{"n":176,"q":"What percentage of patients with early stylet-driven LV leads required lead repositioning or reprogramming due to extracardiac stimulation?","o":["0.1%","50%","2.5%","25%"],"a":2},{"n":177,"q":"A major advance that simplified LV lead delivery was the development of what type of lead technology?","o":["Dual-coil leads","Epicardial screw-in leads","Lumenless leads","Over-the-wire LV leads"],"a":3},{"n":178,"q":"The over-the-wire Medtronic 4193 lead used in the InSync 3 study achieved what successful lead implant rate?","o":["99.9%","95%","75%","50%"],"a":1},{"n":179,"q":"Dislodgment rates with over-the-wire LV leads were generally reported as:","o":["Higher, approximately 15%","Unchanged from stylet-driven leads","Lower, approximately 3.4%","Zero"],"a":2},{"n":180,"q":"What percentage of patients with over-the-wire LV leads required reprogramming to turn off the LV lead due to extracardiac stimulation?","o":["0.5%","8.8%","25%","50%"],"a":1},{"n":181,"q":"Acute hemodynamic studies suggested which LV pacing target site was desirable?","o":["The LV apex","The anterior interventricular vein","The basal LV septum","The midlateral LV free wall"],"a":3},{"n":182,"q":"What has been described as the foremost recent advance in LV pacing lead technology?","o":["The elimination of steroid elution","A return to coaxial lead design","The development of unipolar epicardial leads","The emergence of the quadripolar electrode design"],"a":3},{"n":183,"q":"Quadripolar LV leads have how many electrodes at the distal end?","o":["Two","Six","Three","Four"],"a":3},{"n":184,"q":"Multipoint left ventricular pacing using a quadripolar lead typically involves pacing with how many of the four electrodes simultaneously, with variable timing offsets?","o":["Four","Three","One","Two"],"a":3},{"n":185,"q":"What design feature helps stabilize a coronary sinus LV lead within a large or varicose vein?","o":["Secondary curves (spiral or S-shaped) designed to stabilize on opposing vein walls","A rigid straight body","An inflatable balloon tip","A larger diameter coil"],"a":0},{"n":186,"q":"The Attain Starfix over-the-wire LV lead (active fixation) was associated with what significant issue at extraction, contributing to its discontinuation?","o":["Inability to undeploy the active fixation lobes","Persistent phrenic nerve stimulation","Excessive lead fracture rate","Unacceptably high defibrillation threshold"],"a":0},{"n":187,"q":"In observational studies, acute hemodynamic improvement and more optimal Doppler indices of resynchronization are observed when LV output occurs earlier than RV output by approximately:","o":["200 ms","400 ms","5 ms","40 ms"],"a":3},{"n":188,"q":"What programmable feature in CRT generators allows adjustment of the timing offset between right and left ventricular pacing?","o":["The upper rate limit","The postventricular atrial refractory period","The V-V interval","The AV interval only"],"a":2},{"n":189,"q":"If bipolar capture thresholds are high on an LV lead, what alternative pacing vector may be used to obtain adequate thresholds?","o":["Stimulation using the SVC coil exclusively","Unipolar atrial-only stimulation","Stimulation between the RA lead and can only","Stimulation between the LV lead tip (or vein) cathode and the RV defibrillator coils"],"a":3},{"n":190,"q":"His bundle pacing has emerged using which proprietary Medtronic lead?","o":["The model 2187 over-the-wire lead","The lumenless 3830 lead","The Attain Starfix model 4195 lead","The SelectSecure model 4193 lead"],"a":1},{"n":191,"q":"The bundle of His has three components; which of the following is one of them?","o":["The AV nodal artery branch","The terminal Purkinje fibers of the right bundle branch","The penetrating bundle of His, within the central fibrous body and membranous septum","The sinoatrial nodal artery branch"],"a":2},{"n":192,"q":"Selective His bundle pacing (S-HBP) captures which structure(s) alone, resulting in a normal QRS morphology?","o":["The His-Purkinje system alone","The RV septal myocardium alone","The left bundle branch alone","The His bundle and surrounding RV septal myocardium"],"a":0},{"n":193,"q":"Nonselective His bundle pacing (NS-HBP) captures the His bundle plus which additional tissue, producing a pseudo-delta wave?","o":["The AV node exclusively","The atrial myocardium","The left ventricular free wall","The surrounding RV septal myocardium"],"a":3},{"n":194,"q":"What has been identified as one of the Achilles heels of His bundle pacing?","o":["Excessive lead dislodgment rates","Higher pacing thresholds","Inability to sense any atrial signal","A mandatory requirement for dual-coil leads"],"a":1},{"n":195,"q":"In large cohort studies, was a significant difference in outcomes seen between selective and nonselective His bundle pacing?","o":["Selective HBP showed significantly worse outcomes","Nonselective HBP showed significantly worse outcomes","No significant difference was seen","Only nonselective HBP achieved any QRS narrowing"],"a":2},{"n":196,"q":"His bundle pacing can correct bundle branch block below a site of block due to which physiologic concept?","o":["Anodal capture","Automaticity override suppression","Functional longitudinal dissociation of the His bundle","Retrograde concealed conduction"],"a":2},{"n":197,"q":"The ideal amplitude ratio target (A:V) at the His bundle pacing site, to avoid atrial capture and oversensing, is:","o":["Greater than or equal to 3:1","Less than or equal to 1:3","Greater than 5:1","Exactly 1:1"],"a":1},{"n":198,"q":"If a His electrogram cannot be identified during lead placement, pace mapping can be performed at what output to assess narrowing of the paced QRS?","o":["0.5 V at 0.1 ms","10 V at 2 ms","5 V at 1 ms","25 V at 5 ms"],"a":2},{"n":199,"q":"What diagnostic test is described as necessary while pacing a His bundle lead in order to assess the type of capture and correction of any underlying bundle branch block?","o":["A 12-lead ECG","An electrophysiology study with isoproterenol infusion","An echocardiogram","A chest X-ray"],"a":0},{"n":200,"q":"In experienced hands, what success rate is reported for His bundle pacing implantation?","o":["Exactly 75%","Approximately 60%","Below 50%","Above 90%"],"a":3}],"sections":[{"from":1,"to":5,"title":"PACEMAKER SELECTION - General/Algorithm"},{"from":6,"to":11,"title":"PACEMAKER SELECTION - Symptomatic Bradycardia"},{"from":12,"to":18,"title":"PACEMAKER SELECTION - Pure Sinus Node Dysfunction"},{"from":19,"to":21,"title":"PACEMAKER SELECTION - Pure AV Block"},{"from":22,"to":23,"title":"PACEMAKER SELECTION - Neurocardiogenic Syncope and Carotid Sinus Hypersensitivity"},{"from":24,"to":26,"title":"PACEMAKER SELECTION - Choosing the Lead or Leads (General)"},{"from":27,"to":31,"title":"PACEMAKER SELECTION - Threshold Reduction"},{"from":32,"to":38,"title":"PACEMAKER SELECTION - Lead Polarity"},{"from":39,"to":46,"title":"PACEMAKER SELECTION - Electrode Design"},{"from":47,"to":52,"title":"PACEMAKER SELECTION - Lead Conductor"},{"from":53,"to":65,"title":"PACEMAKER SELECTION - Lead Insulation"},{"from":66,"to":73,"title":"PACEMAKER SELECTION - Lead Diameter"},{"from":74,"to":81,"title":"PACEMAKER SELECTION - Compatibility of Lead and Pulse Generator"},{"from":82,"to":84,"title":"PACEMAKER SELECTION - Epicardial Leads"},{"from":85,"to":86,"title":"PACEMAKER SELECTION - Resources for Lead Performance and Survival Data"},{"from":87,"to":100,"title":"PACEMAKER SELECTION - Leadless Pacemakers"},{"from":101,"to":103,"title":"ICD GENERATOR AND LEAD SELECTION - Coaxial and Multilumen Leads"},{"from":104,"to":111,"title":"ICD GENERATOR AND LEAD SELECTION - ICD Lead Conductor"},{"from":112,"to":117,"title":"ICD GENERATOR AND LEAD SELECTION - ICD Lead Defibrillation Coil"},{"from":118,"to":118,"title":"ICD GENERATOR AND LEAD SELECTION - ICD Lead Insulation Material"},{"from":119,"to":140,"title":"ICD GENERATOR AND LEAD SELECTION - Integrated and Bipolar Sensing"},{"from":141,"to":149,"title":"ICD GENERATOR AND LEAD SELECTION - ICD Lead Connector"},{"from":150,"to":154,"title":"ICD GENERATOR AND LEAD SELECTION - Size, Longevity, Programmable Waveforms"},{"from":155,"to":164,"title":"ICD GENERATOR AND LEAD SELECTION - Dual-Chamber vs Single-Chamber ICD"},{"from":165,"to":167,"title":"ICD GENERATOR AND LEAD SELECTION - Adverse Effects and Specific Features"},{"from":168,"to":172,"title":"CARDIAC RESYNCHRONIZATION THERAPY - Promoting Continuous Biventricular Pacing"},{"from":173,"to":186,"title":"CARDIAC RESYNCHRONIZATION THERAPY - Leads for Resynchronization Devices"},{"from":187,"to":189,"title":"CARDIAC RESYNCHRONIZATION THERAPY - RV-LV Pacing Offset and Vector"},{"from":190,"to":200,"title":"CARDIAC RESYNCHRONIZATION THERAPY - His Bundle Pacing"}]};
+const TOTAL = DATA.questions.length;
+const LETTERS = ['A','B','C','D'];
+const state = new Map();   // question number -> chosen index
+
+const exam = document.getElementById('exam');
+const frag = document.createDocumentFragment();
+
+DATA.sections.forEach(sec => {
+  const head = document.createElement('div');
+  head.className = 'section-head';
+  head.innerHTML = '<span class="section-range">' + String(sec.from).padStart(3,'0') + '\u2013' + String(sec.to).padStart(3,'0') + '</span>';
+  const h2 = document.createElement('h2');
+  h2.className = 'section-title';
+  h2.textContent = sec.title;
+  head.appendChild(h2);
+  frag.appendChild(head);
+
+  DATA.questions.filter(q => q.n >= sec.from && q.n <= sec.to).forEach(q => {
+    const card = document.createElement('article');
+    card.className = 'q';
+    card.id = 'q' + q.n;
+
+    const num = document.createElement('div');
+    num.className = 'q-num';
+    num.textContent = String(q.n).padStart(3,'0');
+
+    const stem = document.createElement('p');
+    stem.className = 'q-stem';
+    stem.textContent = q.q;
+
+    const opts = document.createElement('div');
+    opts.className = 'q-opts';
+    opts.setAttribute('role','group');
+    opts.setAttribute('aria-label','Question ' + q.n);
+
+    q.o.forEach((text, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.dataset.i = i;
+      b.innerHTML =
+        '<span class="opt-letter">' + LETTERS[i] + '</span>' +
+        '<span class="opt-text"></span>' +
+        '<span class="opt-mark" aria-hidden="true"></span>';
+      b.querySelector('.opt-text').textContent = text;
+      b.addEventListener('click', () => choose(q, card, i));
+      opts.appendChild(b);
+    });
+
+    const verdict = document.createElement('div');
+    verdict.className = 'verdict';
+
+    card.append(num, stem, opts, verdict);
+    frag.appendChild(card);
+  });
+});
+exam.appendChild(frag);
+
+function choose(q, card, picked){
+  if (state.has(q.n)) return;
+  state.set(q.n, picked);
+  const right = picked === q.a;
+  const buttons = card.querySelectorAll('.opt');
+
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.a && right)      { b.classList.add('is-correct'); b.querySelector('.opt-mark').textContent = '\u2713'; }
+    else if (i === picked)       { b.classList.add('is-wrong'); }
+    else if (i === q.a)          { b.classList.add('is-correct'); }
+    else                         { b.classList.add('is-muted'); }
+  });
+
+  card.classList.add('answered', right ? 'answered-correct' : 'answered-wrong');
+  const v = card.querySelector('.verdict');
+  if (right){
+    v.innerHTML = '<span class="verdict-tick">\u2713</span><span>Correct</span>';
+  } else {
+    v.innerHTML = '<span>Correct answer</span><span class="answer-chip">' + LETTERS[q.a] + '</span>';
+  }
+  v.setAttribute('role','status');
+  update();
+}
+
+function update(){
+  let ok = 0;
+  state.forEach((picked, n) => {
+    const q = DATA.questions[n-1];
+    if (picked === q.a) ok++;
+  });
+  const done = state.size, no = done - ok;
+  document.getElementById('stat-done').textContent = done + '/' + TOTAL;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-no').textContent = no;
+  document.getElementById('stat-pct').textContent = done ? Math.round(ok/done*100) + '%' : '\u2014';
+  drawStrip();
+}
+
+// Signature: a rhythm strip that deposits a beat for every answer.
+// Upright R wave = correct, inverted deflection = missed.
+function drawStrip(){
+  const W = 1000, MID = 26, slot = W / TOTAL;
+  let ok = '', no = '';
+  for (let n = 1; n <= TOTAL; n++){
+    if (!state.has(n)) continue;
+    const q = DATA.questions[n-1];
+    const right = state.get(n) === q.a;
+    const x = (n - 0.5) * slot;
+    if (right){
+      ok += `M${(x-slot*0.42).toFixed(2)} ${MID} L${(x-slot*0.14).toFixed(2)} ${MID+3} L${x.toFixed(2)} 5 L${(x+slot*0.14).toFixed(2)} ${MID+4} L${(x+slot*0.42).toFixed(2)} ${MID} `;
+    } else {
+      no += `M${(x-slot*0.42).toFixed(2)} ${MID} L${(x-slot*0.14).toFixed(2)} ${MID-2} L${x.toFixed(2)} 46 L${(x+slot*0.14).toFixed(2)} ${MID-1} L${(x+slot*0.42).toFixed(2)} ${MID} `;
+    }
+  }
+  document.getElementById('trace-ok').setAttribute('d', ok);
+  document.getElementById('trace-no').setAttribute('d', no);
+}
+
+document.getElementById('reset').addEventListener('click', () => {
+  state.clear();
+  document.querySelectorAll('.q').forEach(card => {
+    card.classList.remove('answered','answered-correct','answered-wrong');
+    card.querySelector('.verdict').innerHTML = '';
+    card.querySelectorAll('.opt').forEach(b => {
+      b.disabled = false;
+      b.classList.remove('is-correct','is-wrong','is-muted');
+      b.querySelector('.opt-mark').textContent = '';
+    });
+  });
+  update();
+  window.scrollTo({top:0, behavior:'auto'});
+});
+
+update();
+</script>
+</body>
+</html>

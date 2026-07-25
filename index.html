@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rizzra Exam &middot; CCDS Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0f1a;
+    --surface:#111a2b;
+    --surface-hover:#16223a;
+    --line:#212e47;
+    --text:#e7ecf5;
+    --muted:#8593ab;
+    --trace:#33e2a0;
+    --trace-dim:#1c7a58;
+    --amber:#ffb454;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bg-grid{
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:48px 48px;
+    opacity:0.25;
+    pointer-events:none;
+    z-index:0;
+    mask-image:radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:860px;
+    margin:0 auto;
+    padding:0 24px 100px;
+  }
+  header{
+    padding:72px 0 40px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--trace);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:8px;height:8px;
+    border-radius:50%;
+    background:var(--trace);
+    box-shadow:0 0 0 0 rgba(51,226,160,0.6);
+    animation:pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(51,226,160,0.55);}
+    70%{box-shadow:0 0 0 10px rgba(51,226,160,0);}
+    100%{box-shadow:0 0 0 0 rgba(51,226,160,0);}
+  }
+  h1{
+    font-size:clamp(32px,5vw,46px);
+    line-height:1.1;
+    margin:0 0 16px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  h1 span{color:var(--trace);}
+  .sub{
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.6;
+    max-width:560px;
+    margin:0 0 40px;
+  }
+  .strip{
+    width:100%;
+    height:64px;
+    display:block;
+    margin-bottom:8px;
+  }
+  .strip path{
+    fill:none;
+    stroke:var(--trace);
+    stroke-width:1.6;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:900;
+    stroke-dashoffset:900;
+    animation:draw 2.4s ease-out forwards;
+  }
+  @keyframes draw{
+    to{stroke-dashoffset:0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .strip path{animation:none;stroke-dashoffset:0;}
+    .eyebrow::before{animation:none;}
+  }
+  .list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    border-top:1px solid var(--line);
+  }
+  .list li{
+    border-bottom:1px solid var(--line);
+  }
+  .list a{
+    display:flex;
+    align-items:baseline;
+    gap:22px;
+    padding:22px 4px;
+    text-decoration:none;
+    color:var(--text);
+    transition:background 0.15s ease, padding-left 0.15s ease;
+    position:relative;
+  }
+  .list a:hover, .list a:focus-visible{
+    background:var(--surface-hover);
+    padding-left:14px;
+  }
+  .list a:focus-visible{
+    outline:2px solid var(--trace);
+    outline-offset:-2px;
+  }
+  .list a:hover .go, .list a:focus-visible .go{
+    opacity:1;
+    transform:translateX(0);
+  }
+  .num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    color:var(--trace-dim);
+    min-width:56px;
+    flex-shrink:0;
+    padding-top:2px;
+  }
+  .list a:hover .num, .list a:focus-visible .num{
+    color:var(--trace);
+  }
+  .titles{
+    flex:1;
+    min-width:0;
+  }
+  .ch-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .ch-name{
+    font-size:17px;
+    font-weight:500;
+    line-height:1.35;
+  }
+  .go{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--amber);
+    opacity:0;
+    transform:translateX(-6px);
+    transition:opacity 0.15s ease, transform 0.15s ease;
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  footer{
+    margin-top:56px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+    color:var(--muted);
+    font-size:13px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  footer a{color:var(--trace-dim);}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">IBHRE &middot; CCDS Allied Health</div>
+    <svg class="strip" viewBox="0 0 700 64" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,32 L120,32 L145,32 L160,8 L178,58 L196,16 L212,32 L260,32 L280,32 L296,20 L310,44 L326,32 L700,32" />
+    </svg>
+    <h1>Rizzra <span>Exam</span></h1>
+    <p class="sub">Chapter-by-chapter practice exams for the IBHRE CCDS Allied Health certification, built from <em>Cardiac Pacing, Defibrillation and Resynchronization: A Clinical Approach</em>, 4th Edition. Pick a chapter to start.</p>
+  </header>
+
+  <ul class="list">
+    <li><a href="Chapter1_CCDS_Interactive_Exam.html"><span class="num">01</span><span class="titles"><span class="ch-label">Chapter 1</span><span class="ch-name">Pacing and Defibrillation: Clinically Relevant Basics for Practice</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter2_CCDS_Interactive_Exam.html"><span class="num">02</span><span class="titles"><span class="ch-label">Chapter 2</span><span class="ch-name">Hemodynamics of Cardiac Pacing: Optimization and Programming to Enhance Cardiac Function</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter4_CCDS_Interactive_Exam.html"><span class="num">04</span><span class="titles"><span class="ch-label">Chapter 4</span><span class="ch-name">Choosing the Device Generator and Leads: Matching the Device with the Patient</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter5_CCDS_Interactive_Exam.html"><span class="num">05</span><span class="titles"><span class="ch-label">Chapter 5</span><span class="ch-name">Implanting and Extracting Cardiac Devices</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter6_CCDS_Interactive_Exam.html"><span class="num">06</span><span class="titles"><span class="ch-label">Chapter 6</span><span class="ch-name">Implant-Related Complications</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter7_CCDS_Interactive_Exam.html"><span class="num">07</span><span class="titles"><span class="ch-label">Chapter 7</span><span class="ch-name">Timing Cycles</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter8_CCDS_Interactive_Exam.html"><span class="num">08</span><span class="titles"><span class="ch-label">Chapter 8</span><span class="ch-name">Programming: Maximizing Benefit and Minimizing Morbidity</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter9_CCDS_Interactive_Exam.html"><span class="num">09</span><span class="titles"><span class="ch-label">Chapter 9</span><span class="ch-name">Sensor Technology for Rate-Adaptive Pacing and Hemodynamic Optimization</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter10_CCDS_Interactive_Exam.html"><span class="num">10</span><span class="titles"><span class="ch-label">Chapter 10</span><span class="ch-name">Troubleshooting</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter12_CCDS_Interactive_Exam.html"><span class="num">12</span><span class="titles"><span class="ch-label">Chapter 12</span><span class="ch-name">Electromagnetic Interference: Sources, Recognition, and Management</span></span><span class="go">start &rarr;</span></a></li>
+    <li><a href="Chapter13_CCDS_Interactive_Exam.html"><span class="num">13</span><span class="titles"><span class="ch-label">Chapter 13</span><span class="ch-name">Follow-up</span></span><span class="go">start &rarr;</span></a></li>
+  </ul>
+
+  <footer>
+    11 chapters &middot; more added as they're completed
+  </footer>
+</div>
+</body>
+</html>
